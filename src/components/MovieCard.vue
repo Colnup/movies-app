@@ -44,7 +44,8 @@ export default {
             // console.log('Emiting showDetail from MovieCard')
             this.$emit('showDetail', this.movie.id);
         }
-    }
+    },
+    emits: ['showDetail']
 }
 
 

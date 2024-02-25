@@ -1,9 +1,14 @@
 <template>
     <v-card color="white" :loading="!movie">
+
+        <v-card-title v-if="!movie">
+            Chargement...
+        </v-card-title>
+
         <div v-if="movie">
             <v-img class="align-end" :src="config.url.photo_path + movie.backdrop_path"
                 gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)">
-                <v-card-title>{{ movie.title }}</v-card-title>
+                <v-card-title :class="{ 'white--text': true }">{{ movie.title }}</v-card-title>
             </v-img>
 
             <v-card-text>
@@ -26,7 +31,7 @@
                     </v-col>
 
                     <v-col cols="12">
-                        <v-rating :value="movie.vote_average / 2" half-increments color="yellow" readonly></v-rating>
+                        <v-rating :model-value="movie.vote_average / 2" color="yellow" readonly half-increments></v-rating>
                     </v-col>
 
                     <v-col cols="12">
@@ -34,7 +39,9 @@
                     </v-col>
 
                     <v-col cols="12">
-                        <v-chip color="primary" label>Langue originale: {{ movie.original_language }}</v-chip>
+                        <v-chip color="primary" label>Langue originale: {{ new Intl.DisplayNames(['fr'], {
+                            type: 'language'
+                        }).of(movie.original_language) }}</v-chip>
                     </v-col>
 
                     <v-col cols="12">
@@ -65,6 +72,7 @@ export default {
         return {
             movie: null,
             config: config,
+            movieCache: {}
         };
     },
     watch: {
@@ -77,10 +85,17 @@ export default {
     },
     methods: {
         fetchMovieDetails(movieId) {
+
+            if (this.movieCache[movieId]) {
+                this.movie = this.movieCache[movieId];
+                return;
+            }
+
             const url = `${config.url.movie_detail}/${movieId}?api_key=${config.api_key}&language=fr-FR`;
             axios.get(url)
                 .then(response => {
                     this.movie = response.data;
+                    this.movieCache[movieId] = this.movie;
                     // console.log(this.movie);
                 })
                 .catch(error => {
@@ -99,5 +114,9 @@ export default {
 <style scoped>
 .synopsis {
     white-space: pre-wrap;
+}
+
+.white--text {
+    color: white;
 }
 </style>
